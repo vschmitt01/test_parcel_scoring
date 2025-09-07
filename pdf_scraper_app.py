@@ -16,12 +16,16 @@ FIELDS = [
     "Planning scheme",
     "Primary zoning",
     "Overlays present (Y/N)",
-    "Vicinity overlays",
     "Aboriginal Culture Heritage",
     "Designated Bushfire Prone Area",
     "Native Vegetation",
     "Extractive Industry Work Authorities (WA)"
 ]
+
+valid_codes = {
+    "BMO","DDO","DPO","EAO","ESO","FO","HO","LSO",
+    "LSIO","PAO","RO","SCO","SMO","VPO","AEO","EMO"
+}
 
 def extract_field(label, text, stop_on_scale=False):
     """
@@ -58,11 +62,6 @@ def extract_field(label, text, stop_on_scale=False):
                 result = re.sub(r"\s*0\s+\d+\s*m\s*$", "", result)
             return result
     return ""
-
-valid_codes = {
-    "BMO","DDO","DPO","EAO","ESO","FO","HO","LSO",
-    "LSIO","PAO","RO","SCO","SMO","VPO","AEO","EMO"
-}
 
 def clean_codes(raw_codes):
     """Filter overlay codes so only valid ones remain."""
@@ -139,21 +138,6 @@ def extract_overlays(text):
 
     return overlays_flag, overlay_text_str, vicinity_str
 
-
-FIELDS = [
-    "Address",
-    "PFI/Identifier",
-    "Number of parcels",
-    "LGA",
-    "Planning scheme",
-    "Primary zoning",
-    "Overlays present (Y/N)",
-    "Vicinity overlays",
-    "Aboriginal Culture Heritage",
-    "Designated Bushfire Prone Area",
-    "Native Vegetation"
-]
-
 if uploaded_files:
     records = []
     for uploaded_file in uploaded_files:
@@ -212,10 +196,9 @@ if uploaded_files:
         
         entry["Overlays present (Y/N)"] = overlays_flag + " (" + "/".join(overlay_codes) +")" + " (vicinity: " + "/".join(vicinity_codes) + ")" 
         
-        
         records.append(entry)
 
-    
+
     df = pd.DataFrame(records, columns=["File Name"] + FIELDS)
     st.dataframe(df)
 
