@@ -140,7 +140,7 @@ def extract_overlays(text):
 
 def extract_site_area(text):
     """Extract site area in hectares from a property report PDF."""
-    match = re.search(r"\(([\d.,]+)\s*ha\)", text, re.IGNORECASE)
+    match = re.search(r"Area:\s*([\d,\.]+)\s*sq\.?\s*m", text, re.IGNORECASE)
     if match:
         return match.group(1).replace(",", "")
     return ""
@@ -159,7 +159,7 @@ if uploaded_files:
             if match:
                 pfi = "PFI " + match.group(1)
                 site_area_dict[pfi] = extract_site_area(text)
-        site_area_dict = {k: float(v) for k, v in site_area_dict.items()}                
+        site_area_dict = {k: round(float(v)/10000,2) for k, v in site_area_dict.items()}              
                 
         if uploaded_file.name.endswith("Vicplan-Planning-Property-Report.pdf"):
         
