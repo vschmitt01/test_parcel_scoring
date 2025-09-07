@@ -151,7 +151,7 @@ if uploaded_files:
     site_area_dict = {}
     
     for uploaded_file in uploaded_files:
-        if uploaded_file.endswith("Detailed-Property-Report.pdf"):
+        if uploaded_file.name.endswith("Detailed-Property-Report.pdf"):
             with pdfplumber.open(uploaded_file) as pdf:
                 text = "\n".join([page.extract_text() or "" for page in pdf.pages])
 
@@ -160,7 +160,7 @@ if uploaded_files:
                 pfi = "PFI " + match.group(1)
                 site_area_dict[pfi] = extract_site_area(text)                
                 
-        if uploaded_file.endswith("Vicplan-Planning-Property-Report.pdf"):
+        if uploaded_file.name.endswith("Vicplan-Planning-Property-Report.pdf"):
         
             with pdfplumber.open(uploaded_file) as pdf:
                 text = "\n".join([page.extract_text() or "" for page in pdf.pages])
