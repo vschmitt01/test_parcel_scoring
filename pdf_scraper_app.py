@@ -24,7 +24,7 @@ FIELDS = [
 
 valid_codes = {
     "BMO","DDO","DPO","EAO","ESO","FO","HO","LSO",
-    "LSIO","PAO","RO","SCO","SMO","VPO","AEO","EMO"
+    "LSIO","PAO","RO","SBO","SCO","SLO","SMO","VPO","AEO","EMO"
 }
 
 def extract_field(label, text, stop_on_scale=False):
