@@ -159,7 +159,7 @@ if uploaded_files:
             if match:
                 pfi = "PFI " + match.group(1)
                 site_area_dict[pfi] = extract_site_area(text)
-        site_area_dict = {k: round(float(v)/10000,2) for k, v in site_area_dict.items()}              
+        site_area_dict = {k: round(float(v)/1,2) for k, v in site_area_dict.items()}              
                 
         if uploaded_file.name.endswith("Vicplan-Planning-Property-Report.pdf"):
         
