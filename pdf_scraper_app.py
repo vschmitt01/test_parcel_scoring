@@ -10,8 +10,8 @@ uploaded_files = st.file_uploader("Upload one or more PDFs", type="pdf", accept_
 
 FIELDS = [
     "Address",
+    "Site area",
     "PFI/Identifier",
-    "Number of parcels",
     "LGA",
     "Planning scheme",
     "Primary zoning",
@@ -19,7 +19,7 @@ FIELDS = [
     "Aboriginal Culture Heritage",
     "Designated Bushfire Prone Area",
     "Native Vegetation",
-    "Extractive Industry Work Authorities (WA)"
+    "Number of parcels",
 ]
 
 valid_codes = {
@@ -138,65 +138,87 @@ def extract_overlays(text):
 
     return overlays_flag, overlay_text_str, vicinity_str
 
+def extract_site_area(text):
+    """Extract site area in hectares from a property report PDF."""
+    match = re.search(r"\(([\d.,]+)\s*ha\)", text, re.IGNORECASE)
+    if match:
+        return match.group(1).replace(",", "")
+    return ""
+
+            
 if uploaded_files:
     records = []
+    site_area_dict = {}
+    
     for uploaded_file in uploaded_files:
-        with pdfplumber.open(uploaded_file) as pdf:
-            text = "\n".join([page.extract_text() or "" for page in pdf.pages])
+        if uploaded_file.endswith("Detailed-Property-Report.pdf"):
+            with pdfplumber.open(uploaded_file) as pdf:
+                text = "\n".join([page.extract_text() or "" for page in pdf.pages])
 
-        entry = {"File Name": uploaded_file.name}
+            match = re.search(r"\(ID(\d+)\)", uploaded_file.name)
+            if match:
+                pfi = "PFI " + match.group(1)
+                site_area_dict[pfi] = extract_site_area(text)                
+                
+        if uploaded_file.endswith("Vicplan-Planning-Property-Report.pdf"):
         
-        entry["Address"] = extract_field("Address", text)        
-        
-        match = re.search(r"\((.*?)\)", uploaded_file.name)
-        if match:
-            content = match.group(1)
-            pfi = "PFI " + content[2:] if content.startswith("ID") else content  
-        entry["PFI/Identifier"] = pfi
-        
-        entry["Number of parcels"] = extract_field("This property has", text) or "1"
-        
-        lga = extract_field("Local Government Area", text)
-        lga_clean = re.sub(r"\(.*?\)|:|\bwww.*", "", lga).strip()
-        entry["LGA"] = lga_clean 
-        
-        planning_scheme = extract_field("Planning Scheme", text)
-        planning_scheme_clean = planning_scheme.split("-")[0].strip()
-        entry["Planning scheme"] = planning_scheme_clean
-        
-        entry["Primary zoning"] = extract_field("Planning Zones", text, stop_on_scale=True)
-
-        overlays_flag, overlay_text_str, vicinity_str = extract_overlays(text)
-        overlay_codes = re.findall(r"\((.*?)\)", overlay_text_str) or "-"
-        vicinity_codes = re.findall(r"\((.*?)\)", vicinity_str) or "-"
-        
-        overlay_codes = clean_codes(overlay_codes)
-        vicinity_codes = clean_codes(vicinity_codes)
-
-        aboriginal_text = extract_field("Areas of Aboriginal Cultural Heritage Sensitivity", text)
-        aboriginal_flag = "Y" if aboriginal_text.lower().startswith("all or part of this property is an 'area of cultural heritage sensitivity'") else "N"
-        entry["Aboriginal Culture Heritage"] = aboriginal_flag
-        
-        bushfire_text = extract_field("Designated Bushfire Prone Areas", text)
-        bushfire_flag = "Y" if bushfire_text.lower().startswith("this property is in a") else "N"
-        entry["Designated Bushfire Prone Area"] = bushfire_flag
-        
-        vegetation_text = extract_field("Native Vegetation", text)
-        vegetation_flag = "Y" if vegetation_text.lower().startswith("native plants that are indigenous to the region and important for biodiversity might be present on this property") else "N"
-        entry["Native Vegetation"] = vegetation_flag
-        
-        EIWA_text = extract_field("Extractive Industry Work Authorities", text)
-        eiwa_lower = EIWA_text.lower().strip()
-        EIWA_flag = "Y" if eiwa_lower.startswith("(wa) all or parts of this property are within") else "N"
-        match = re.search(r"(within.*?)(?:\(|$.)", eiwa_lower)
-        EIWA_extracted = match.group(1).strip() if match else ""
-        entry["Extractive Industry Work Authorities (WA)"] = EIWA_extracted
-        
-        vicinity_codes = (vicinity_codes + [EIWA_extracted] if EIWA_extracted else vicinity_codes) or "-"
-        
-        entry["Overlays present (Y/N)"] = overlays_flag + " (" + "/".join(overlay_codes) +")" + " (vicinity: " + "/".join(vicinity_codes) + ")" 
-        
-        records.append(entry)
+            with pdfplumber.open(uploaded_file) as pdf:
+                text = "\n".join([page.extract_text() or "" for page in pdf.pages])
+    
+            entry = {"File Name": uploaded_file.name}
+            
+            entry["Address"] = extract_field("Address", text)        
+            
+            match = re.search(r"\(ID(\d+)\)", uploaded_file.name)
+            if match:
+                content = match.group(1)
+                pfi = "PFI " + match.group(1) 
+            entry["PFI/Identifier"] = pfi
+            
+            entry["Site area"] = site_area_dict.get(entry["PFI/Identifier"], "")
+            
+            entry["Number of parcels"] = extract_field("This property has", text) or "1"
+            
+            lga = extract_field("Local Government Area", text)
+            lga_clean = re.sub(r"\(.*?\)|:|\bwww.*", "", lga).strip()
+            entry["LGA"] = lga_clean 
+            
+            planning_scheme = extract_field("Planning Scheme", text)
+            planning_scheme_clean = planning_scheme.split("-")[0].strip()
+            entry["Planning scheme"] = planning_scheme_clean
+            
+            entry["Primary zoning"] = extract_field("Planning Zones", text, stop_on_scale=True)
+    
+            overlays_flag, overlay_text_str, vicinity_str = extract_overlays(text)
+            overlay_codes = re.findall(r"\((.*?)\)", overlay_text_str) or "-"
+            vicinity_codes = re.findall(r"\((.*?)\)", vicinity_str) or "-"
+            
+            overlay_codes = clean_codes(overlay_codes)
+            vicinity_codes = clean_codes(vicinity_codes)
+    
+            aboriginal_text = extract_field("Areas of Aboriginal Cultural Heritage Sensitivity", text)
+            aboriginal_flag = "Y" if aboriginal_text.lower().startswith("all or part of this property is an 'area of cultural heritage sensitivity'") else "N"
+            entry["Aboriginal Culture Heritage"] = aboriginal_flag
+            
+            bushfire_text = extract_field("Designated Bushfire Prone Areas", text)
+            bushfire_flag = "Y" if bushfire_text.lower().startswith("this property is in a") else "N"
+            entry["Designated Bushfire Prone Area"] = bushfire_flag
+            
+            vegetation_text = extract_field("Native Vegetation", text)
+            vegetation_flag = "Y" if vegetation_text.lower().startswith("native plants that are indigenous to the region and important for biodiversity might be present on this property") else "N"
+            entry["Native Vegetation"] = vegetation_flag
+            
+            EIWA_text = extract_field("Extractive Industry Work Authorities", text)
+            eiwa_lower = EIWA_text.lower().strip()
+            EIWA_flag = "Y" if eiwa_lower.startswith("(wa) all or parts of this property are within") else "N"
+            match = re.search(r"(within.*?)(?:\(|$.)", eiwa_lower)
+            EIWA_extracted = match.group(1).strip() if match else ""
+            
+            vicinity_codes = (vicinity_codes + [EIWA_extracted] if EIWA_extracted else vicinity_codes) or "-"
+            
+            entry["Overlays present (Y/N)"] = overlays_flag + " (" + "/".join(overlay_codes) +")" + " (vicinity: " + "/".join(vicinity_codes) + ")" 
+            
+            records.append(entry)
 
 
     df = pd.DataFrame(records, columns=["File Name"] + FIELDS)
