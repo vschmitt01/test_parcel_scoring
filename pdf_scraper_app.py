@@ -10,7 +10,7 @@ uploaded_files = st.file_uploader("Upload one or more PDFs", type="pdf", accept_
 
 FIELDS = [
     "Address",
-    "Site area",
+    "Site area (ha)",
     "PFI/Identifier",
     "LGA",
     "Planning scheme",
