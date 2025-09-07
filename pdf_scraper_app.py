@@ -158,7 +158,8 @@ if uploaded_files:
             match = re.search(r"\(ID(\d+)\)", uploaded_file.name)
             if match:
                 pfi = "PFI " + match.group(1)
-                site_area_dict[pfi] = extract_site_area(text)                
+                site_area_dict[pfi] = extract_site_area(text)
+        site_area_dict = {k: float(v) for k, v in site_area_dict.items()}                
                 
         if uploaded_file.name.endswith("Vicplan-Planning-Property-Report.pdf"):
         
