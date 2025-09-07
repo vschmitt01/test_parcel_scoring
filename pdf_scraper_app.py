@@ -164,7 +164,7 @@ if uploaded_files:
         
         entry["Address"] = extract_field("Address", text)        
         
-        match = re.search(r"\((.*?)\)", uploaded_file)
+        match = re.search(r"\((.*?)\)", uploaded_file.name)
         if match:
             content = match.group(1)
             pfi = "PFI " + content[2:] if content.startswith("ID") else content  
@@ -213,8 +213,7 @@ if uploaded_files:
         
         records.append(entry)
 
-
-
+    
     df = pd.DataFrame(records, columns=["File Name"] + FIELDS)
     st.dataframe(df)
 
