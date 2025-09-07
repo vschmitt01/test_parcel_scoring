@@ -176,7 +176,7 @@ if uploaded_files:
                 pfi = "PFI " + match.group(1) 
             entry["PFI/Identifier"] = pfi
             
-            entry["Site area"] = site_area_dict.get(entry["PFI/Identifier"], "")
+            entry["Site area (ha)"] = site_area_dict.get(entry["PFI/Identifier"], "")
             
             entry["Number of parcels"] = extract_field("This property has", text) or "1"
             
