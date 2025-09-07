@@ -189,7 +189,9 @@ if uploaded_files:
         overlay_codes = clean_codes(overlay_codes)
         vicinity_codes = clean_codes(vicinity_codes)
 
-        entry["Aboriginal Culture Heritage"] = extract_field("Aboriginal", text)
+        aboriginal_text = extract_field("Areas of Aboriginal Cultural Heritage Sensitivity", text)
+        aboriginal_flag = "Y" if aboriginal_text.lower().startswith("all or part of this property is an 'area of cultural heritage sensitivity'") else "N"
+        entry["Aboriginal Culture Heritage"] = aboriginal_flag
         
         bushfire_text = extract_field("Designated Bushfire Prone Areas", text)
         bushfire_flag = "Y" if bushfire_text.lower().startswith("this property is in a") else "N"
