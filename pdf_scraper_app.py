@@ -203,15 +203,15 @@ if uploaded_files:
             vicinity_codes = clean_codes(vicinity_codes)
     
             aboriginal_text = extract_field("Areas of Aboriginal Cultural Heritage Sensitivity", text)
-            aboriginal_flag = "Y" if aboriginal_text.lower().startswith("all or part of this property is an 'area of cultural heritage sensitivity'") else "N"
+            aboriginal_flag = "Y" if re.match(r"all or part of this (property|parcel) is an 'area of cultural heritage sensitivity'", aboriginal_text.lower()) else "N"
             entry["Aboriginal Culture Heritage"] = aboriginal_flag
             
             bushfire_text = extract_field("Designated Bushfire Prone Areas", text)
-            bushfire_flag = "Y" if bushfire_text.lower().startswith("this property is in a") else "N"
+            bushfire_flag = "Y" if re.match(r"this (property|parcel) is in a", bushfire_text.lower()) else "N"
             entry["Designated Bushfire Prone Area"] = bushfire_flag
             
             vegetation_text = extract_field("Native Vegetation", text)
-            vegetation_flag = "Y" if vegetation_text.lower().startswith("native plants that are indigenous to the region and important for biodiversity might be present on this property") else "N"
+            vegetation_flag = "Y" if vegetation_text.lower().startswith("native plants that are indigenous to the region and important for biodiversity might be present on this") else "N"
             entry["Native Vegetation"] = vegetation_flag
             
             EIWA_text = extract_field("Extractive Industry Work Authorities", text)
