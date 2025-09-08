@@ -188,8 +188,13 @@ if uploaded_files:
             planning_scheme_clean = planning_scheme.split("-")[0].strip()
             entry["Planning scheme"] = planning_scheme_clean
             
-            entry["Primary zoning"] = extract_field("Planning Zones", text, stop_on_scale=True)
-    
+            planning_zones_text = extract_field("Planning Zones", text, stop_on_scale=True)
+            road_network_text = extract_field("Planning Zones", text)
+            match = re.search(r"\bTRZ\d+\b", road_network_text)
+            trz_code = match.group(0) if match else ""
+            planning_zones_text_ = planning_zones_text + " (near " + trz_code + ")" if match else planning_zones_text
+            entry["Primary zoning"] = planning_zones_text_
+            
             overlays_flag, overlay_text_str, vicinity_str = extract_overlays(text)
             overlay_codes = re.findall(r"\((.*?)\)", overlay_text_str) or "-"
             vicinity_codes = re.findall(r"\((.*?)\)", vicinity_str) or "-"
